@@ -1,4 +1,5 @@
 require "rack"
+require "logger"
 
 module Rack
   class Lint
@@ -6,14 +7,20 @@ module Rack
       @app.call(env)
     end
   end
+
+  class CommonLogger
+    def call(env)
+      @app.call(env)
+    end
+  end
 end
 
 app = proc { |env|
-  input = env['rack.input']
-  out = open('zero.dat', 'wb')
-  while buf = input.read(1024*16)
-    out.write(buf)
-  end
+  now = Time.now
+  warn "> #{now}.#{now.usec}"
+  _ = env["rack.input"].read
+  now = Time.now
+  warn "  #{now}.#{now.usec}"
   [200, { 'Content-Type' => 'text/plain' }, ['ok']]
 }
 
